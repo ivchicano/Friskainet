@@ -55,16 +55,18 @@ module.exports = {
         return interaction.reply({ content: 'El usuario indicado no está participando en el torneo.' });
       }
       const user = interaction.guild.members.cache.get(userId);
+      const channel = interaction.guild.channels.cache.get(rom.channelId);
       const parallelPromises = [
         PokemonRomUser.update({ winner: true }, { where: { userId, pokemonromId: rom.id } }),
         deactivateRom(interaction),
+        channel.send({ content: `¡El torneo ha acabado, gracias a todos por participar! Ganador: ${user.displayName}` }),
         challongeapi.stop(rom.challongeTournamentId),
       ];
       if (category) {
         parallelPromises.push(pokeChannel.setParent(category));
       }
       Promise.all(parallelPromises).then(() => logger.log('El torneo ha acabado.')).catch((errors) => logger.error(errors.toString()));
-      return interaction.reply({ content: `¡El torneo ha acabado, gracias a todos por participar! Ganador: ${user.displayName}` });
+      return interaction.reply({ content: 'El torneo ha acabado.' });
     }
     return interaction.reply({ content: 'No hay un torneo activo.' });
   },
